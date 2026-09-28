@@ -1,0 +1,40 @@
+# Dependências
+node_modules/
+
+# Next.js / build
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Variáveis de ambiente (manter apenas .env.example)
+.env
+.env.*
+!.env.example
+
+# Power Apps CLI
+.powerapps-cli/
+
+# Playwright / testes
+.playwright-mcp/
+playwright-report/
+test-results/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+
+# Atalhos e anotações locais
+start-dev.bat
+start-dev.ps1
+PUBLICAR-NO-POWER-APPS.md

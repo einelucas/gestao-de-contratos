@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "appId": "de0fd029-5cbb-4004-9bb3-ad3a38577f34",
+  "appDisplayName": "Gestão de Contratos Web",
+  "region": "prod",
+  "appType": "CodeApp",
+  "environmentId": "ba4cbb87-2968-e148-ad5c-97b12d4c32e5",
+  "description": " ",
+  "buildPath": "./out",
+  "buildEntryPoint": "index.html",
+  "localAppUrl": "http://localhost:3000",
+  "logoPath": "Default",
+  "connectionReferences": {},
+  "databaseReferences": {}
+}

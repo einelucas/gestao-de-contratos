@@ -1,0 +1,29 @@
+{
+  "name": "gestao-contratos-nextjs",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "powerapps:init": "pa app init --display-name \"Gestão de Contratos Web\" --build-path ./out --file-entry-point index.html --app-url http://localhost:3000",
+    "powerapps:run": "pa app run",
+    "powerapps:push": "npm run build && pa app push"
+  },
+  "dependencies": {
+    "next": "16.3.6",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@microsoft/power-apps-cli": "1.0.2",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "16.3.6",
+    "typescript": "^5.8.0"
+  }
+}
