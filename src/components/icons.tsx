@@ -28,4 +28,9 @@ export const DatabaseIcon = (p: IconProps) => <BaseIcon {...p}><ellipse cx="12" 
 export const DownloadIcon = (p: IconProps) => <BaseIcon {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/></BaseIcon>;
 export const UploadIcon = (p: IconProps) => <BaseIcon {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/></BaseIcon>;
 export const RestoreIcon = (p: IconProps) => <BaseIcon {...p}><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></BaseIcon>;
-export const SparkIcon = (p: IconProps) => <BaseIcon {...p}><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9Z"/><path d="M19 17v4M17 19h4"/></BaseIcon>;
+export const LayersIcon = (p: IconProps) => <BaseIcon {...p}><path d="m12 3 9 5-9 5-9-5Z"/><path d="m3 13 9 5 9-5"/></BaseIcon>;
+export const SwapIcon = (p: IconProps) => <BaseIcon {...p}><path d="M7 4 3 8l4 4"/><path d="M3 8h13"/><path d="m17 20 4-4-4-4"/><path d="M21 16H8"/></BaseIcon>;
+export const ArrowRightIcon = (p: IconProps) => <BaseIcon {...p}><path d="M5 12h14M13 6l6 6-6 6"/></BaseIcon>;
+export const UserIcon = (p: IconProps) => <BaseIcon {...p}><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></BaseIcon>;
+export const LockIcon = (p: IconProps) => <BaseIcon {...p}><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></BaseIcon>;
+export const SparkIcon =(p: IconProps) => <BaseIcon {...p}><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9Z"/><path d="M19 17v4M17 19h4"/></BaseIcon>;

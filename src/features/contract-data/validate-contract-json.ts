@@ -1,5 +1,6 @@
-import type { RecordIssue, ValidatedRecord } from "@/features/contract-data/contract-import.types";
+import type { ImportOptions, RecordIssue, ValidatedRecord } from "@/features/contract-data/contract-import.types";
 import { toIsoDateOnly } from "@/features/contract-data/date-only";
+import { resolveSector, SECTOR_ID_PATTERN } from "@/lib/sectors";
 
 const REQUIRED_TEXT_FIELDS = ["contractNumber", "supplier", "unit"] as const;
 const MONEY_FIELDS = ["serviceValue", "ownMaterialValue", "thirdPartyMaterialValue", "totalValue"] as const;
@@ -18,11 +19,53 @@ function recordLabel(index: number, record: unknown): string {
   return `Registro ${index}`;
 }
 
+/** Setor informado pelo próprio registro (`sectorId` ou o campo legado `sector`), se houver. */
+export function declaredSector(raw: unknown): string | null {
+  if (!isPlainObject(raw)) return null;
+  const value = !isMissing(raw.sectorId) ? raw.sectorId : raw.sector;
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+/**
+ * Resolve o setor do registro. `sectorId` é obrigatório; por compatibilidade
+ * com planilhas antigas, um campo textual `sector` (nome ou sigla) também é
+ * aceito quando os setores são conhecidos.
+ */
+function validateSector(raw: Record<string, unknown>, options: ImportOptions, messages: string[]): string | null {
+  // Dentro de um setor, o destino é sempre o setor atual (o arquivo não decide).
+  if (options.targetSectorId) return options.targetSectorId;
+  const value = !isMissing(raw.sectorId) ? raw.sectorId : raw.sector;
+  const field = !isMissing(raw.sectorId) ? "sectorId" : "sector";
+  if (isMissing(value)) {
+    messages.push("sectorId ausente");
+    return null;
+  }
+  if (typeof value !== "string" || !value.trim()) {
+    messages.push(`${field} deve ser um texto não vazio`);
+    return null;
+  }
+  if (!options.sectors) {
+    if (SECTOR_ID_PATTERN.test(value)) return value;
+    messages.push(`sectorId inválido: ${JSON.stringify(value)}`);
+    return null;
+  }
+  const sector = resolveSector(value, options.sectors);
+  if (!sector) {
+    messages.push(`setor desconhecido: ${JSON.stringify(value)}`);
+    return null;
+  }
+  if (!sector.active) {
+    messages.push(`setor inativo: ${sector.name}`);
+    return null;
+  }
+  return sector.id;
+}
+
 /**
  * Valida a estrutura de cada registro. Registros com problema são reportados
  * individualmente; os demais seguem para normalização.
  */
-export function validateContractRecords(records: unknown[]): { valid: ValidatedRecord[]; issues: RecordIssue[] } {
+export function validateContractRecords(records: unknown[], options: ImportOptions = {}): { valid: ValidatedRecord[]; issues: RecordIssue[] } {
   const valid: ValidatedRecord[] = [];
   const issues: RecordIssue[] = [];
   const seenIds = new Set<number>();
@@ -35,6 +78,8 @@ export function validateContractRecords(records: unknown[]): { valid: ValidatedR
       issues.push({ index, label: recordLabel(index, raw), messages: ["registro não é um objeto JSON"] });
       return;
     }
+
+    const sectorId = validateSector(raw, options, messages);
 
     const id = raw.id;
     if (isMissing(id)) messages.push("id ausente");
@@ -77,8 +122,8 @@ export function validateContractRecords(records: unknown[]): { valid: ValidatedR
       messages.push("situations deve ser uma lista de textos");
     }
 
-    if (messages.length) issues.push({ index, label: recordLabel(index, raw), messages });
-    else valid.push({ index, record: raw });
+    if (messages.length || !sectorId) issues.push({ index, label: recordLabel(index, raw), messages });
+    else valid.push({ index, record: raw, sectorId });
   });
 
   return { valid, issues };

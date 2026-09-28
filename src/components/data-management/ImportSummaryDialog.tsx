@@ -10,6 +10,12 @@ interface ImportSummaryDialogProps {
   summary: ContractDatasetSummary;
   totalRecords: number;
   issues: RecordIssue[];
+  /** Resolve o nome exibido de um `sectorId`. */
+  sectorName: (sectorId: string) => string;
+  /** Importação dentro de um setor: todos os contratos vão para ele. */
+  targetSectorName?: string;
+  /** Registros cujo setor informado no arquivo foi ignorado. */
+  reassignedSectorCount: number;
   busy: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -17,7 +23,7 @@ interface ImportSummaryDialogProps {
 
 const number = (value: number) => value.toLocaleString("pt-BR");
 
-export function ImportSummaryDialog({ source, generated, summary, totalRecords, issues, busy, onConfirm, onCancel }: ImportSummaryDialogProps) {
+export function ImportSummaryDialog({ source, generated, summary, totalRecords, issues, sectorName, targetSectorName, reassignedSectorCount, busy, onConfirm, onCancel }: ImportSummaryDialogProps) {
   const partial = issues.length > 0;
   const title = generated ? "Dados sintéticos gerados" : partial ? "Arquivo parcialmente válido" : "Arquivo válido";
   const situations = [
@@ -27,6 +33,9 @@ export function ImportSummaryDialog({ source, generated, summary, totalRecords, 
     { label: "Sem data", value: summary.bySituation["Sem data"], tone: "sem-data" },
     { label: "Finalizados", value: summary.bySituation.Finalizado, tone: "finalizado" },
   ];
+  const sectors = Object.entries(summary.bySector)
+    .map(([id, count]) => ({ id, name: sectorName(id), count }))
+    .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
 
   return (
     <DataDialog
@@ -53,8 +62,27 @@ export function ImportSummaryDialog({ source, generated, summary, totalRecords, 
           <li key={item.label}><span className={`import-dot dot-${item.tone}`} />{item.label}<strong>{number(item.value)}</strong></li>
         ))}
       </ul>
+      {targetSectorName ? (
+        <div className="import-target">
+          <span>Setor de destino</span>
+          <strong>{targetSectorName}</strong>
+        </div>
+      ) : (
+        <div className="import-sectors">
+          <strong>{sectors.length === 1 ? "Setor afetado" : `${sectors.length} setores afetados`}</strong>
+          <ul className="import-sector-list">
+            {sectors.map((sector) => <li key={sector.id}>{sector.name}<span>{number(sector.count)}</span></li>)}
+          </ul>
+        </div>
+      )}
+      {reassignedSectorCount > 0 && targetSectorName && (
+        <p className="import-warning">
+          {number(reassignedSectorCount)} {reassignedSectorCount === 1 ? "registro informava" : "registros informavam"} outro setor no arquivo.
+          Dentro de um setor, o <code>sectorId</code> do arquivo é ignorado: todos serão importados em {targetSectorName}.
+        </p>
+      )}
       <ImportIssuesList issues={issues} />
-      <p className="import-note">Os dados atuais serão substituídos e ficarão salvos apenas neste navegador.</p>
+      <p className="import-note">Os contratos atuais {sectors.length === 1 ? "deste setor serão substituídos" : "destes setores serão substituídos"}; os demais setores não mudam. Os dados ficam salvos apenas neste navegador.</p>
     </DataDialog>
   );
 }

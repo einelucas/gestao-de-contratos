@@ -5,6 +5,8 @@ export type SortMode = "Status e vencimento" | "Nome do fornecedor" | "Venciment
 
 export interface Contract {
   id: number;
+  /** Setor dono do contrato (`Sector.id`). */
+  sectorId: string;
   contractNumber: string;
   supplier: string;
   serviceDescription: string;
@@ -16,6 +18,11 @@ export interface Contract {
   endDate: string | null;
   unit: string;
   situations: string[];
+}
+
+/** `id` é único apenas dentro do setor; use esta chave ao misturar setores. */
+export function contractKey(contract: Pick<Contract, "id" | "sectorId">): string {
+  return `${contract.sectorId}:${contract.id}`;
 }
 
 export interface ContractView extends Contract {

@@ -17,6 +17,12 @@ const suppliers = [
   "Nortech Sistemas Integrados",
 ];
 
+// Distribuição desigual de propósito, para que cada setor tenha volume diferente.
+const sectorRotation = [
+  "manutencao", "suprimentos", "manutencao", "engenharia", "administrativo",
+  "manutencao", "ti", "suprimentos", "financeiro", "engenharia",
+];
+
 const units = ["Dourados", "Nova Mutum", "Sinop", "Campo Grande", "Sidrolândia", "Maringá"];
 const descriptions = [
   "Prestação continuada de serviços técnicos especializados, incluindo atendimento, manutenção preventiva e corretiva.",
@@ -36,7 +42,7 @@ function money(seed: number, min: number, spread: number): number {
   return Math.round((min + ((seed * 7919) % spread)) * 100) / 100;
 }
 
-export function createMockContracts(total = 137): Contract[] {
+export function createMockContracts(total = 240): Contract[] {
   return Array.from({ length: total }, (_, index) => {
     const id = index + 1;
     const supplier = suppliers[index % suppliers.length];
@@ -55,6 +61,7 @@ export function createMockContracts(total = 137): Contract[] {
 
     return {
       id,
+      sectorId: sectorRotation[index % sectorRotation.length],
       contractNumber: `${String(1000 + id).slice(-4)}/2026`,
       supplier,
       serviceDescription: descriptions[index % descriptions.length],

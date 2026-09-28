@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarIcon, FileIcon, PinIcon, XIcon } from "@/components/icons";
-import type { ContractNotification, ContractView } from "@/domain/contract";
+import { contractKey, type ContractNotification, type ContractView } from "@/domain/contract";
 import { formatDate } from "@/lib/format";
 
 interface NotificationsPanelProps {
@@ -31,7 +31,7 @@ export function NotificationsPanel({ notifications, onClose, onOpenContract, onS
           {notifications.length === 0 ? (
             <div className="empty-notifications">Nenhum alerta no momento.</div>
           ) : notifications.map(({ contract, kind, message }) => (
-            <button key={contract.id} className="notification-card" type="button" onClick={() => onOpenContract(contract)}>
+            <button key={contractKey(contract)} className="notification-card" type="button" onClick={() => onOpenContract(contract)}>
               <div className="notification-top">
                 <strong title={contract.supplier}>{contract.supplier}</strong>
                 <span className={`notification-kind kind-${kind.toLowerCase().replaceAll(" ", "-")}`}>{kind}</span>

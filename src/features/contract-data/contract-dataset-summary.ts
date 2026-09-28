@@ -8,6 +8,7 @@ export function summarizeContracts(contracts: Contract[], attentionDays = 20): C
   const bySituation: Record<ContractSituation, number> = { Vigente: 0, Vencido: 0, "Sem data": 0, Finalizado: 0 };
   const units = new Set<string>();
   const suppliers = new Set<string>();
+  const bySector: Record<string, number> = {};
   let attention = 0;
 
   for (const contract of contracts) {
@@ -16,7 +17,8 @@ export function summarizeContracts(contracts: Contract[], attentionDays = 20): C
     if (view.alert === "Atencao") attention += 1;
     units.add(contract.unit.toLowerCase());
     suppliers.add(contract.supplier.toLowerCase());
+    bySector[contract.sectorId] = (bySector[contract.sectorId] ?? 0) + 1;
   }
 
-  return { total: contracts.length, units: units.size, suppliers: suppliers.size, bySituation, attention };
+  return { total: contracts.length, units: units.size, suppliers: suppliers.size, bySituation, attention, bySector };
 }

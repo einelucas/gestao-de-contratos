@@ -1,5 +1,5 @@
-import { ContractDashboard } from "@/components/dashboard/ContractDashboard";
+import { AppShell } from "@/components/app/AppShell";
 
 export default function Home() {
-  return <ContractDashboard />;
+  return <AppShell />;
 }

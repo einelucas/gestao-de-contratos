@@ -5,6 +5,7 @@ import { addDaysToIsoDate, todayIsoDate } from "@/features/contract-data/date-on
 function toPlainRecord(contract: Contract): Contract {
   return {
     id: contract.id,
+    sectorId: contract.sectorId,
     contractNumber: contract.contractNumber,
     supplier: contract.supplier,
     serviceDescription: contract.serviceDescription,
@@ -23,19 +24,22 @@ export function serializeContracts(contracts: Contract[]): string {
   return `${JSON.stringify(contracts.map(toPlainRecord), null, 2)}\n`;
 }
 
-export function exportFileName(prefix = "contratos"): string {
-  return `${prefix}-${todayIsoDate()}.json`;
+/** Ex.: contratos-manutencao-2026-09-28.json (sem setor: visão consolidada). */
+export function exportFileName(scopeLabel?: string, prefix = "contratos"): string {
+  return `${prefix}${scopeLabel ? `-${scopeLabel}` : ""}-${todayIsoDate()}.json`;
 }
 
 /**
  * Modelo de importação: 3 contratos válidos cobrindo vigente, atenção e
- * finalizado. As datas são relativas a hoje para que o modelo demonstre as regras.
+ * finalizado, todos do setor informado. As datas são relativas a hoje para que
+ * o modelo demonstre as regras.
  */
-export function createContractTemplate(today = todayIsoDate()): Contract[] {
+export function createContractTemplate(sectorId: string, today = todayIsoDate()): Contract[] {
   const year = today.slice(0, 4);
   return [
     {
       id: 1,
+      sectorId,
       contractNumber: `0001/${year}`,
       supplier: "Fornecedor Exemplo Ltda",
       serviceDescription: "Prestação de serviços de manutenção preventiva e corretiva.",
@@ -50,6 +54,7 @@ export function createContractTemplate(today = todayIsoDate()): Contract[] {
     },
     {
       id: 2,
+      sectorId,
       contractNumber: `0002/${year}`,
       supplier: "Serviços Modelo S.A.",
       serviceDescription: "Suporte operacional com execução conforme cronograma contratado.",
@@ -64,6 +69,7 @@ export function createContractTemplate(today = todayIsoDate()): Contract[] {
     },
     {
       id: 3,
+      sectorId,
       contractNumber: `0003/${year}`,
       supplier: "Engenharia Demonstração Ltda",
       serviceDescription: "Serviços de engenharia e inspeção técnica.",

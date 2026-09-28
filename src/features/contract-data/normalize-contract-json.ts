@@ -14,7 +14,7 @@ function date(value: unknown): string | null {
  * Converte um registro já validado para `Contract`. Somente dados brutos:
  * situação, alerta e prazo continuam derivados em `src/lib/contract-rules.ts`.
  */
-export function normalizeContractRecord({ record }: ValidatedRecord): Contract {
+export function normalizeContractRecord({ record, sectorId }: ValidatedRecord): Contract {
   const serviceValue = money(record.serviceValue);
   const ownMaterialValue = money(record.ownMaterialValue);
   const thirdPartyMaterialValue = money(record.thirdPartyMaterialValue);
@@ -24,6 +24,7 @@ export function normalizeContractRecord({ record }: ValidatedRecord): Contract {
 
   return {
     id: record.id as number,
+    sectorId,
     contractNumber: text(record.contractNumber),
     supplier: text(record.supplier),
     serviceDescription: typeof record.serviceDescription === "string" ? record.serviceDescription.trim() : "",

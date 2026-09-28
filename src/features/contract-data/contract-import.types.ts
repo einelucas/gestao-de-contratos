@@ -1,4 +1,5 @@
 import type { Contract, ContractSituation } from "@/domain/contract";
+import type { Sector } from "@/domain/sector";
 
 /** Limite de tamanho do arquivo importado (processado somente no navegador). */
 export const MAX_IMPORT_FILE_BYTES = 10 * 1024 * 1024;
@@ -19,6 +20,23 @@ export interface ContractDatasetSummary {
   suppliers: number;
   bySituation: Record<ContractSituation, number>;
   attention: number;
+  /** Quantidade de contratos por `sectorId`. */
+  bySector: Record<string, number>;
+}
+
+/**
+ * Setores conhecidos no momento da importação. Com eles, `sectorId` precisa
+ * existir e estar ativo, e nomes/siglas legados são convertidos para o id.
+ * Sem eles (revalidação do localStorage), basta um `sectorId` bem formado.
+ */
+export interface ImportOptions {
+  sectors?: readonly Sector[];
+  /**
+   * Importação feita dentro de um setor: todos os contratos recebem este
+   * `sectorId`, e o `sectorId` informado no arquivo é ignorado (não pode
+   * mudar o setor selecionado).
+   */
+  targetSectorId?: string;
 }
 
 export type ContractImportResult =
@@ -28,6 +46,8 @@ export type ContractImportResult =
       totalRecords: number;
       issues: RecordIssue[];
       summary: ContractDatasetSummary;
+      /** Registros cujo setor informado no arquivo foi substituído por `targetSectorId`. */
+      reassignedSectorCount: number;
     }
   | {
       ok: false;
@@ -44,4 +64,6 @@ export type ParseResult =
 export interface ValidatedRecord {
   index: number;
   record: Record<string, unknown>;
+  /** `sectorId` já resolvido para o id canônico. */
+  sectorId: string;
 }

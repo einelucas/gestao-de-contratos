@@ -43,9 +43,11 @@ function createRandom(seed: number) {
  * dados brutos (datas, valores, situações) são gerados; a classificação em
  * vigente/atenção/vencido/finalizado continua a cargo de `contract-rules`.
  * Distribuição aproximada: 10% finalizados, 4% sem data, 18% vencidos,
- * 12% vencendo em até 20 dias, restante vigentes.
+ * 12% vencendo em até 20 dias, restante vigentes. Os contratos são divididos
+ * igualmente entre os `sectorIds` informados.
  */
-export function generateSyntheticContracts(total: number, seed = 20260928, today = todayIsoDate()): Contract[] {
+export function generateSyntheticContracts(total: number, sectorIds: readonly string[], seed = 20260928, today = todayIsoDate()): Contract[] {
+  if (!sectorIds.length) throw new Error("Informe ao menos um setor para gerar contratos.");
   const random = createRandom(seed + total);
   const pick = <T,>(items: readonly T[]) => items[Math.floor(random() * items.length)];
   const between = (min: number, max: number) => min + Math.floor(random() * (max - min + 1));
@@ -85,6 +87,7 @@ export function generateSyntheticContracts(total: number, seed = 20260928, today
 
     return {
       id,
+      sectorId: sectorIds[index % sectorIds.length],
       contractNumber: `${String(id).padStart(4, "0")}/${year}`,
       supplier: pick(suppliers),
       serviceDescription: pick(DESCRIPTIONS),

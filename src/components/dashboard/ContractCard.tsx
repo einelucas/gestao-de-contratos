@@ -15,6 +15,8 @@ interface ContractCardProps {
   contract: ContractView;
   mode: ViewMode;
   selected?: boolean;
+  /** Sigla do setor, exibida apenas na visão consolidada. */
+  sectorAcronym?: string;
   onOpen: (contract: ContractView) => void;
 }
 
@@ -26,7 +28,7 @@ function deadlineText(contract: ContractView): string {
   return `${contract.daysToEnd ?? 0} dias restantes`;
 }
 
-export function ContractCard({ contract, mode, selected, onOpen }: ContractCardProps) {
+export function ContractCard({ contract, mode, selected, sectorAcronym, onOpen }: ContractCardProps) {
   const list = mode === "Lista";
   return (
     <button
@@ -38,7 +40,7 @@ export function ContractCard({ contract, mode, selected, onOpen }: ContractCardP
       {list ? (
         <>
           <span className="list-supplier" title={contract.supplier}>{contract.supplier}</span>
-          <span className="list-contract">{contract.contractNumber}</span>
+          <span className="list-contract">{contract.contractNumber}{sectorAcronym && <span className="sector-tag">{sectorAcronym}</span>}</span>
           <span className="list-expiry">{formatDate(contract.endDate)}</span>
           <span className="list-unit"><span className="unit-pill">{contract.unit}</span></span>
           <span className="list-status"><span className={`status-pill status-${contract.situation.toLowerCase().replace(" ", "-")}`}>{contract.situation}</span></span>
@@ -53,6 +55,7 @@ export function ContractCard({ contract, mode, selected, onOpen }: ContractCardP
           <div className="card-row muted-row">
             <FileIcon size={14} />
             <span className="contract-number">Contrato nº {contract.contractNumber}</span>
+            {sectorAcronym && <span className="sector-tag" title="Setor">{sectorAcronym}</span>}
           </div>
           <div className="card-row muted-row">
             <CalendarIcon size={14} />

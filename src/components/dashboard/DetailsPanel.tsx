@@ -6,6 +6,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 
 interface DetailsPanelProps {
   contract: ContractView | null;
+  sectorName: string;
   onClose: () => void;
 }
 
@@ -18,7 +19,7 @@ function Field({ label, value, wide = false }: { label: string; value: string; w
   );
 }
 
-export function DetailsPanel({ contract, onClose }: DetailsPanelProps) {
+export function DetailsPanel({ contract, sectorName, onClose }: DetailsPanelProps) {
   if (!contract) return null;
   return (
     <div className="panel-layer details-layer" role="presentation">
@@ -39,7 +40,8 @@ export function DetailsPanel({ contract, onClose }: DetailsPanelProps) {
           <div className="details-grid">
             <Field label="Fornecedor" value={contract.supplier} wide />
             <Field label="Contrato" value={contract.contractNumber} />
-            <Field label="Unidade" value={contract.unit} />
+            <Field label="Setor" value={sectorName} />
+            <Field label="Unidade" value={contract.unit} wide />
             <Field label="Situação" value={contract.situations.length ? contract.situations.join(", ") : contract.situation} wide />
             <Field label="Início da vigência" value={formatDate(contract.startDate)} />
             <Field label="Fim da vigência" value={formatDate(contract.endDate)} />

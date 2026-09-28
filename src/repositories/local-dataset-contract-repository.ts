@@ -2,65 +2,100 @@ import type { Contract } from "@/domain/contract";
 import type {
   ContractDatasetStore,
   DatasetInfo,
-  DatasetKind,
+  DatasetSource,
   ReplaceDatasetResult,
 } from "@/repositories/contract-dataset-store";
-import type { ContractRepository } from "@/repositories/contract-repository";
+import type { ContractRepository, ContractScope } from "@/repositories/contract-repository";
 import {
-  clearStoredDataset,
-  readStoredDataset,
-  writeStoredDataset,
-  type StoredDataset,
+  readStoredDatasets,
+  writeStoredDatasets,
+  type StoredDatasets,
 } from "@/repositories/local-dataset-storage";
 
 const clone = (items: Contract[]) => items.map((item) => ({ ...item, situations: [...item.situations] }));
 
 /**
- * Usa o dataset salvo no navegador (JSON importado ou gerado) quando existir;
- * caso contrário delega para o repositório padrão (mocks).
+ * Para cada setor do escopo, usa o dataset salvo no navegador (JSON importado
+ * ou gerado) quando existir; os demais setores vêm do repositório padrão (mocks).
  */
 export class LocalDatasetContractRepository implements ContractRepository, ContractDatasetStore {
-  /** undefined = storage ainda não lido; null = sem dataset salvo. */
-  private dataset: StoredDataset | null | undefined;
+  /** undefined = storage ainda não lido. */
+  private datasets: StoredDatasets | undefined;
 
   constructor(private readonly fallback: ContractRepository) {}
 
-  private current(): StoredDataset | null {
-    if (this.dataset === undefined) this.dataset = readStoredDataset();
-    return this.dataset;
+  private current(): StoredDatasets {
+    if (this.datasets === undefined) this.datasets = readStoredDatasets();
+    return this.datasets;
   }
 
-  async list(): Promise<Contract[]> {
-    const dataset = this.current();
-    return dataset ? clone(dataset.contracts) : this.fallback.list();
+  /** Separa o escopo entre setores com dataset local e setores da origem padrão. */
+  private split(scope: ContractScope) {
+    const datasets = this.current();
+    const local: Contract[] = [];
+    const fallbackIds: string[] = [];
+    for (const sectorId of new Set(scope.sectorIds)) {
+      const dataset = datasets[sectorId];
+      if (dataset) local.push(...clone(dataset.contracts));
+      else fallbackIds.push(sectorId);
+    }
+    return { local, fallbackScope: { sectorIds: fallbackIds } };
   }
 
-  async refresh(): Promise<Contract[]> {
-    this.dataset = undefined;
-    return this.current() ? this.list() : this.fallback.refresh();
+  async list(scope: ContractScope): Promise<Contract[]> {
+    const { local, fallbackScope } = this.split(scope);
+    const rest = fallbackScope.sectorIds.length ? await this.fallback.list(fallbackScope) : [];
+    return [...local, ...rest];
   }
 
-  getDatasetInfo(): DatasetInfo {
-    const dataset = this.current();
+  async refresh(scope: ContractScope): Promise<Contract[]> {
+    this.datasets = undefined;
+    const { local, fallbackScope } = this.split(scope);
+    const rest = fallbackScope.sectorIds.length ? await this.fallback.refresh(fallbackScope) : [];
+    return [...local, ...rest];
+  }
+
+  async countBySector(scope: ContractScope): Promise<Record<string, number>> {
+    const datasets = this.current();
+    const { fallbackScope } = this.split(scope);
+    const counts = fallbackScope.sectorIds.length ? await this.fallback.countBySector(fallbackScope) : {};
+    for (const sectorId of scope.sectorIds) {
+      const dataset = datasets[sectorId];
+      if (dataset) counts[sectorId] = dataset.contracts.length;
+    }
+    return counts;
+  }
+
+  getDatasetInfo(sectorId: string): DatasetInfo {
+    const dataset = this.current()[sectorId];
     if (!dataset) return { kind: "default", label: "Dados de demonstração", savedAt: null };
     return { kind: dataset.kind, label: dataset.label, savedAt: dataset.savedAt };
   }
 
-  async replaceDataset(contracts: Contract[], info: { kind: Exclude<DatasetKind, "default">; label: string }): Promise<ReplaceDatasetResult> {
-    const dataset: StoredDataset = {
-      version: 1,
-      kind: info.kind,
-      label: info.label,
-      savedAt: new Date().toISOString(),
-      contracts: clone(contracts),
+  /**
+   * Remove somente o dataset de `sectorId`, grava o novo e salva o conjunto
+   * completo: os demais setores ficam intactos.
+   */
+  async replaceSectorContracts(sectorId: string, contracts: Contract[], source: DatasetSource): Promise<ReplaceDatasetResult> {
+    const next: StoredDatasets = {
+      ...this.current(),
+      [sectorId]: {
+        kind: source.kind,
+        label: source.label,
+        savedAt: new Date().toISOString(),
+        // Garante que nada fora do setor seja gravado nele.
+        contracts: clone(contracts).map((contract) => ({ ...contract, sectorId })),
+      },
     };
-    const persisted = writeStoredDataset(dataset);
-    this.dataset = dataset;
+    const persisted = writeStoredDatasets(next);
+    this.datasets = next;
     return { persisted };
   }
 
-  async resetDataset(): Promise<void> {
-    clearStoredDataset();
-    this.dataset = null;
+  async resetSectorContracts(sectorIds: readonly string[]): Promise<void> {
+    const next: StoredDatasets = { ...this.current() };
+    for (const sectorId of sectorIds) delete next[sectorId];
+    writeStoredDatasets(next);
+    this.datasets = next;
   }
 }

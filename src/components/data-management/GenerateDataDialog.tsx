@@ -5,17 +5,19 @@ import { DataDialog } from "@/components/data-management/DataDialog";
 import { SYNTHETIC_SIZES } from "@/features/contract-data/generate-synthetic-contracts";
 
 interface GenerateDataDialogProps {
+  /** Setor (ou "todos os setores") que receberá os contratos gerados. */
+  scopeLabel: string;
   onGenerate: (total: number) => void;
   onCancel: () => void;
 }
 
-export function GenerateDataDialog({ onGenerate, onCancel }: GenerateDataDialogProps) {
+export function GenerateDataDialog({ scopeLabel, onGenerate, onCancel }: GenerateDataDialogProps) {
   const [total, setTotal] = useState<number>(SYNTHETIC_SIZES[2]);
   return (
     <DataDialog
       eyebrow="Dados"
       title="Gerar dados sintéticos"
-      description="Contratos fictícios no mesmo formato do importador, distribuídos entre situações, unidades e fornecedores."
+      description={`Contratos fictícios para ${scopeLabel}, no mesmo formato do importador, distribuídos entre situações, unidades e fornecedores.`}
       onClose={onCancel}
       footer={(
         <>
